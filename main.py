@@ -37,6 +37,24 @@ def convert(original_format, target_format):
         print(f"\nInvaild directory path: {directory_input}")
         sys.exit(0)
 
+    quality = None
+    if target_format == "webp":
+        while True:
+            print("\Enter WebP quality (0~100 / Default: 80)")
+            quality_input = input("> ").strip()
+            if quality_input == "":
+                quality = 80
+                break
+            try:
+                target_quality = int(quality_input)
+                if 0 <= target_quality <= 100:
+                    quality = target_quality
+                    break
+                else:
+                    print("Please enter a number between 0 and 100.")
+            except ValueError:
+                print("Invalid input. Please enter an integer between 0 and 100.")
+
     output_directory = os.path.join(directory_input, f"converted_{target_format}")
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -53,7 +71,11 @@ def convert(original_format, target_format):
                 with Image.open(input_path) as img:
                     if target_format in ["jpg", "jpeg"] and img.mode in ("RGBA", "LA"):
                         img = img.convert("RGB")
-                    img.save(output_path, target_format.upper())
+                    if target_format == "webp":
+                        save_kwargs = {}
+                        save_kwargs["quality"] = quality
+
+                    img.save(output_path, target_format.upper(), **save_kwargs)
                     converted_count += 1
                     print(f"Converted: {filename} --> {output_filename}")
             except Exception as e:
